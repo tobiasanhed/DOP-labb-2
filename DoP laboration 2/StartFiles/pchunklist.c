@@ -23,15 +23,17 @@ typedef struct chunkT {
 
 struct pqueueCDT {
 	chunkT *head;
+	int totalElements;
 };
 
 /* Exported entries */
 
 static void insertElement(chunkT *chunk, int newValue){
 	int i, j;
-
+	// för varje element i chunken
 	for (i = 0; i <= chunk->elementsInValues; i++){
-		if (newValue > chunk->values[i]){
+		// om nya värdet är större än värdet vi tittar på
+		if (newValue >= chunk->values[i]){
 			for(j = chunk->elementsInValues; j > i; j--) {
 				if(j == 20)
 					j--;
@@ -43,6 +45,8 @@ static void insertElement(chunkT *chunk, int newValue){
 			chunk->minValue = chunk->values[chunk->elementsInValues - 1];
 			return;
 		}
+		if(i == chunk->elementsInValues)
+			chunk->values[i] = newValue;
 	}
 	if (chunk->elementsInValues == 0) {
 		chunk->values[0] = newValue;
@@ -87,6 +91,7 @@ pqueueADT NewPQueue(void)
 	chunk = New(chunkT*);
 	pqueue = New(pqueueADT);
 	pqueue->head = chunk;
+	pqueue->totalElements = 0;
 
 	chunk->elementsInValues = 0;
 	chunk->maxValue = 0;
@@ -131,14 +136,16 @@ void Enqueue(pqueueADT pqueue, int newValue)
 	chunkT *cur, *prev;
 	// sätt cursor på första chunken
 	cur = pqueue->head;
-	// sätt cursor på rätt chunk om den inte redan är där
+	// sätt cursor på rätt chunk om den inte redan är där (kollar även så att det finns en nästa-chunk)
 	while (newValue < cur->minValue && cur->next != NULL){
 		prev = cur;
 		cur = cur->next;
 	}
-
+	// är chunken full
 	if (cur->elementsInValues >= MAX_ELEMS_PER_BLOCK) {
+		// splitta
 		splitChunk(cur);
+		// sätt in newValue på rätt chunk
 		if(newValue >= cur->minValue)
 			insertElement(cur, newValue);
 		else
@@ -147,6 +154,7 @@ void Enqueue(pqueueADT pqueue, int newValue)
 	else {
 		insertElement(cur, newValue);
 	}
+	pqueue->totalElements++;
 
 
 	
@@ -184,10 +192,12 @@ int DequeueMax(pqueueADT pqueue)
 			FreeBlock(toBeDeleted);
 		}
 		else {
-			printf("tomt!!");
+			pqueue->head->maxValue = 0;
+			pqueue->head->minValue = 0;
 		}
 	}
 	// returnera gamla förstavärdet
+	pqueue->totalElements--;
 	return (value);
 }
 
