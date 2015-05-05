@@ -33,6 +33,8 @@ static void insertElement(chunkT *chunk, int newValue){
 	for (i = 0; i <= chunk->elementsInValues; i++){
 		if (newValue > chunk->values[i]){
 			for(j = chunk->elementsInValues; j > i; j--) {
+				if(j == 20)
+					j--;
 				chunk->values[j] = chunk->values[j-1];
 			}
 			chunk->values[i] = newValue;
@@ -127,22 +129,24 @@ bool IsFull(pqueueADT pqueue){
 void Enqueue(pqueueADT pqueue, int newValue)
 {
 	chunkT *cur, *prev;
-
+	// sätt cursor på första chunken
 	cur = pqueue->head;
-
+	// sätt cursor på rätt chunk om den inte redan är där
 	while (newValue < cur->minValue && cur->next != NULL){
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur->elementsInValues >= MAX_ELEMS_PER_BLOCK)
+	if (cur->elementsInValues >= MAX_ELEMS_PER_BLOCK) {
 		splitChunk(cur);
-
-	if (newValue > cur->minValue || cur->next == NULL)
+		if(newValue >= cur->minValue)
+			insertElement(cur, newValue);
+		else
+			insertElement(cur->next, newValue);
+	}
+	else {
 		insertElement(cur, newValue);
-	else
-		insertElement(cur->next, newValue);
-
+	}
 
 
 	
@@ -162,21 +166,28 @@ int DequeueMax(pqueueADT pqueue)
 
 	if (IsEmpty(pqueue))
 		Error("Tried to dequeue max from an empty pqueue!");
-
+	// första värdet lagras i variabel
 	value = pqueue->head->values[0];
-
+	// counter för antalet element minskas
+	pqueue->head->elementsInValues--;
+	// flytta alla element som finns kvar ett steg framåt
 	for (i = 0; i < pqueue->head->elementsInValues; i++){
 		pqueue->head->values[i] = pqueue->head->values[i + 1];
 	}
-
-	pqueue->head->elementsInValues--;
+	// är chunken tom
 	if (pqueue->head->elementsInValues == 0)	{
-		toBeDeleted = pqueue->head;
+		// och det finns en chunk efter head chunken
 		if (pqueue->head->next != NULL){
+			// ta bort head chunken, byt ut till head->next
+			toBeDeleted = pqueue->head;
 			pqueue->head = pqueue->head->next;
 			FreeBlock(toBeDeleted);
 		}
+		else {
+			printf("tomt!!");
+		}
 	}
+	// returnera gamla förstavärdet
 	return (value);
 }
 
