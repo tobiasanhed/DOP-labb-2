@@ -35,8 +35,6 @@ static void insertElement(chunkT *chunk, int newValue){
 		// om nya värdet är större än värdet vi tittar på
 		if (newValue >= chunk->values[i]){
 			for(j = chunk->elementsInValues; j > i; j--) {
-				if(j == 20)
-					j--;
 				chunk->values[j] = chunk->values[j-1];
 			}
 			chunk->values[i] = newValue;
@@ -69,8 +67,10 @@ static void splitChunk(chunkT *current){
 
 	for (i = MAX_ELEMS_PER_BLOCK/2; i < MAX_ELEMS_PER_BLOCK; i++){
 		newChunk->values[i - MAX_ELEMS_PER_BLOCK/2] = current->values[i];
+		current->values[i] = -100000;
 		current->elementsInValues--;
 		newChunk->elementsInValues++;
+
 	}
 	
 	newChunk->maxValue = newChunk->values[0];
@@ -81,12 +81,16 @@ static void splitChunk(chunkT *current){
 	else
 		newChunk->next = current->next;
 	current->next = newChunk;
+	for(i=MAX_ELEMS_PER_BLOCK / 2; i < MAX_ELEMS_PER_BLOCK; i++){
+		newChunk->values[i] = -100000;
+	}
 }
 
 pqueueADT NewPQueue(void)
 {
 	pqueueADT pqueue;
 	chunkT *chunk;
+	int i;
 
 	chunk = New(chunkT*);
 	pqueue = New(pqueueADT);
@@ -97,6 +101,9 @@ pqueueADT NewPQueue(void)
 	chunk->maxValue = 0;
 	chunk->minValue = 0;
 	chunk->next = NULL;
+	for(i=0; i < MAX_ELEMS_PER_BLOCK; i++){
+		chunk->values[i] = -100000;
+	}
 	return (pqueue);
 }
 
@@ -194,6 +201,9 @@ int DequeueMax(pqueueADT pqueue)
 		else {
 			pqueue->head->maxValue = 0;
 			pqueue->head->minValue = 0;
+			for(i=0; i < MAX_ELEMS_PER_BLOCK; i++){
+				pqueue->head->values[i] = -100000;
+			}
 		}
 	}
 	// returnera gamla förstavärdet
