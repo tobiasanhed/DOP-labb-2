@@ -88,11 +88,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\StartFiles\main.c" />
-    <ClCompile Include="..\StartFiles\pchunklist.c" />
+    <ClCompile Include="..\StartFiles\pchunklist.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\StartFiles\performance.c" />
     <ClCompile Include="..\StartFiles\pqarray.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\StartFiles\pqheap.c" />
     <ClCompile Include="..\StartFiles\pqlist.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>

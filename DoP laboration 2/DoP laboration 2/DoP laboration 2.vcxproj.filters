@@ -41,6 +41,9 @@
     <ClCompile Include="..\StartFiles\pchunklist.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\StartFiles\pqheap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\StartFiles\performance.h">
