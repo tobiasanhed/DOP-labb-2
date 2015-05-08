@@ -35,11 +35,12 @@ static void extendArray(pqueueADT pqueue){
 	for (i = 1; i <= pqueue->heap->maxNodes; i++){
 		newArray[i] = pqueue->heap->heapValues[i];
 	}
-
-	FreeBlock(pqueue->heap->heapValues);
+	
+	free(pqueue->heap->heapValues);
 
 	pqueue->heap->heapValues = newArray;
 	pqueue->heap->maxNodes *= 2;
+
 }
 
 
@@ -101,6 +102,7 @@ void Enqueue(pqueueADT pqueue, int newValue)
 
 	//Kollar ifall elementet är större än sin förälder, isf skifta och fortsätt kolla.
 	while (TRUE){
+		if (cpInHeap == 1) break;
 		if (pqueue->heap->heapValues[cpInHeap] > pqueue->heap->heapValues[cpInHeap / 2]){
 			temp = pqueue->heap->heapValues[cpInHeap / 2];
 			pqueue->heap->heapValues[cpInHeap / 2] = pqueue->heap->heapValues[cpInHeap];
@@ -133,13 +135,13 @@ int DequeueMax(pqueueADT pqueue)
 
 	//Flytta upp sista elementet i heapen.
 	pqueue->heap->heapValues[1] = pqueue->heap->heapValues[pqueue->heap->nodesInHeap];
+	pqueue->heap->heapValues[pqueue->heap->nodesInHeap] = 0;
 
 	//Möblera om heapen så att det största värdet återigen ligger längst upp i heapen 
 	//och håll koll på vart du är.
 	cpInHeap = 1;
 	while (TRUE){
-		//Du är i ett löv.
-		if (cpInHeap == pqueue->heap->nodesInHeap) break;
+
 		//Om noden är mindre en något av sina barn, skifta och fortsätt sedan.
 		if (pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[2 * cpInHeap] ||
 			pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[(2 * cpInHeap) + 1]){
@@ -152,7 +154,7 @@ int DequeueMax(pqueueADT pqueue)
 			else{
 				temp = pqueue->heap->heapValues[(2 * cpInHeap) + 1];
 				pqueue->heap->heapValues[(2 * cpInHeap) + 1] = pqueue->heap->heapValues[cpInHeap];
-				pqueue->heap->heapValues[cpInHeap] = pqueue->heap->heapValues[(2 * cpInHeap) + 1];
+				pqueue->heap->heapValues[cpInHeap] = temp;
 				cpInHeap = (cpInHeap * 2) + 1;
 			}
 		}
