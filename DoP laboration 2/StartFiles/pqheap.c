@@ -28,19 +28,19 @@ struct pqueueCDT {
 static void extendArray(pqueueADT pqueue){
 	
 	int i;
-	int *newArray;
+	int *newArray,
+		*oldArray;
 
+	oldArray = pqueue->heap->heapValues;
 	newArray = NewArray(pqueue->heap->maxNodes * 2, int);
 
 	for (i = 1; i <= pqueue->heap->maxNodes; i++){
-		newArray[i] = pqueue->heap->heapValues[i];
+		newArray[i] = oldArray[i];
 	}
 	
-	free(pqueue->heap->heapValues);
-
 	pqueue->heap->heapValues = newArray;
 	pqueue->heap->maxNodes *= 2;
-
+	FreeBlock(oldArray);
 }
 
 
