@@ -28,25 +28,25 @@ struct pqueueCDT {
 static void extendArray(pqueueADT pqueue){
 	
 	int i;
-	int *newArray,
-		*oldArray;
+	int *newArray;
 
-	oldArray = pqueue->heap->heapValues;
 	newArray = NewArray(pqueue->heap->maxNodes * 2, int);
 
-	for (i = 1; i <= pqueue->heap->maxNodes; i++){
-		newArray[i] = oldArray[i];
-	}
-	
+	for (i = 1; i <= pqueue->heap->maxNodes; i++)
+		newArray[i] = pqueue->heap->heapValues[i];
+
+	FreeBlock(pqueue->heap->heapValues);
 	pqueue->heap->heapValues = newArray;
 	pqueue->heap->maxNodes *= 2;
-	FreeBlock(oldArray);
+	
 }
 
 
 
 pqueueADT NewPQueue(void)
 {
+
+	int i;
 	pqueueADT pqueue;
 	heapT *heap;
 
@@ -57,7 +57,7 @@ pqueueADT NewPQueue(void)
 	heap->nodesInHeap = 0;
 	heap->maxNodes = START_SIZE;
 	heap->heapValues = NewArray(START_SIZE, int);
-	
+
 	return (pqueue);
 }
 
@@ -92,7 +92,7 @@ void Enqueue(pqueueADT pqueue, int newValue)
 		cpInHeap;
 
 	//Kolla ifall heapen är full.
-	if (pqueue->heap->nodesInHeap == pqueue->heap->maxNodes)
+	if (pqueue->heap->nodesInHeap + 1 == pqueue->heap->maxNodes)
 		extendArray(pqueue);
 
 	//Sätt in värdet sist i heapen
@@ -102,6 +102,7 @@ void Enqueue(pqueueADT pqueue, int newValue)
 
 	//Kollar ifall elementet är större än sin förälder, isf skifta och fortsätt kolla.
 	while (TRUE){
+		//Om man är först i vektorn ska man inte kolla mer..
 		if (cpInHeap == 1) break;
 		if (pqueue->heap->heapValues[cpInHeap] > pqueue->heap->heapValues[cpInHeap / 2]){
 			temp = pqueue->heap->heapValues[cpInHeap / 2];
@@ -135,28 +136,35 @@ int DequeueMax(pqueueADT pqueue)
 
 	//Flytta upp sista elementet i heapen.
 	pqueue->heap->heapValues[1] = pqueue->heap->heapValues[pqueue->heap->nodesInHeap];
-	pqueue->heap->heapValues[pqueue->heap->nodesInHeap] = 0;
+	pqueue->heap->heapValues[pqueue->heap->nodesInHeap] = -10000;
 
 	//Möblera om heapen så att det största värdet återigen ligger längst upp i heapen 
 	//och håll koll på vart du är.
 	cpInHeap = 1;
 	while (TRUE){
 
-		//Om noden är mindre en något av sina barn, skifta och fortsätt sedan.
-		if (pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[2 * cpInHeap] ||
-			pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[(2 * cpInHeap) + 1]){
-			if (pqueue->heap->heapValues[2 * cpInHeap] > pqueue->heap->heapValues[(2 * cpInHeap) + 1]){
-				temp = pqueue->heap->heapValues[2 * cpInHeap];
-				pqueue->heap->heapValues[2 * cpInHeap] = pqueue->heap->heapValues[cpInHeap];
-				pqueue->heap->heapValues[cpInHeap] = temp;
-				cpInHeap *= 2;
+		//Man kan kan inte kolla efter vektorns slut..
+		if (cpInHeap * 2 < pqueue->heap->nodesInHeap){
+			//Om noden är mindre en något av sina barn, skifta och fortsätt sedan.
+			if (pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[2 * cpInHeap] ||
+				pqueue->heap->heapValues[cpInHeap] < pqueue->heap->heapValues[(2 * cpInHeap) + 1]){
+				//Är vänstra barnet större än det högra barnet, byt med vänstra barnet
+				if (pqueue->heap->heapValues[2 * cpInHeap] > pqueue->heap->heapValues[(2 * cpInHeap) + 1]){
+					temp = pqueue->heap->heapValues[2 * cpInHeap];
+					pqueue->heap->heapValues[2 * cpInHeap] = pqueue->heap->heapValues[cpInHeap];
+					pqueue->heap->heapValues[cpInHeap] = temp;
+					cpInHeap *= 2;
+				}
+				else{
+					//annars byt med högra
+					temp = pqueue->heap->heapValues[(2 * cpInHeap) + 1];
+					pqueue->heap->heapValues[(2 * cpInHeap) + 1] = pqueue->heap->heapValues[cpInHeap];
+					pqueue->heap->heapValues[cpInHeap] = temp;
+					cpInHeap = (cpInHeap * 2) + 1;
+				}
 			}
-			else{
-				temp = pqueue->heap->heapValues[(2 * cpInHeap) + 1];
-				pqueue->heap->heapValues[(2 * cpInHeap) + 1] = pqueue->heap->heapValues[cpInHeap];
-				pqueue->heap->heapValues[cpInHeap] = temp;
-				cpInHeap = (cpInHeap * 2) + 1;
-			}
+			else
+				break;
 		}
 		else
 			break;
