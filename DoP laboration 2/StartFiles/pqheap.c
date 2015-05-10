@@ -184,10 +184,14 @@ int DequeueMax(pqueueADT pqueue)
 
 int BytesUsed(pqueueADT pqueue)
 {
-	int total;
+	int total,
+		i;
 
 	total = sizeof(*pqueue);
 	total += sizeof(pqueue->heap);
+
+	for (i = 0; i <= pqueue->heap->nodesInHeap; i++)
+		total += sizeof(pqueue->heap->heapValues[i]);
 
 	return (total);
 }
